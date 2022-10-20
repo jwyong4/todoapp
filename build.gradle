@@ -1,0 +1,76 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.4'
+	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id "org.asciidoctor.jvm.convert" version "3.3.2" // .adoc 확장자를 가지는 AsciiDoc 문서 생성 플러그인
+	id 'war'
+	id 'java'
+}
+
+group = 'com.soloproject'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext { // ext 변수의 set() 메서드를 이용하여 API 문서 스니핏이 생성될 경로 지정
+	set('snippetsDir', file("build/generated-snippets"))
+}
+
+configurations {
+	asciidoctorExtensions // AsciiDoctor에서 사용되는 의존 그룹 지정
+}
+
+dependencies {
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc' // restdocs-core, mockmvc
+	asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor' // 해당 그룹에 의존 라이브러리 포함
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.mapstruct:mapstruct:1.5.1.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.1.Final'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	implementation 'com.google.code.gson:gson'
+}
+
+tasks.named('test') { // test task 실행 시, API 문서 생성 스니핏 디렉토리 경로 지정
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+}
+
+tasks.named('asciidoctor') { // asciidoctor task 실행 시, 기능 사용을 위해 asciidoctorExtensions을 설정
+	configurations "asciidoctorExtensions"
+	inputs.dir snippetsDir
+	dependsOn test
+}
+
+task copyDocument(type: Copy) { // build task 실행 전에 실행되는 task
+	dependsOn asciidoctor // asciidoctor task 실행 후, 해당 task가 실행되도록 의존성 설정
+	from file("${asciidoctor.outputDir}") // build/docs/asciidoc/ 경로에 생성되는 index.html을 copy
+	into file("src/main/resources/static/docs") // 해당 경로로 index.html을 추가한다.
+}
+
+build {
+	dependsOn copyDocument // build task가 실행되기 전에 copyDocument task가 먼저 수행되도록 한다.
+}
+
+bootJar {
+	dependsOn copyDocument // bootJar task 실행 전에 copyDocument task가 실행 되도록 의존성 설정
+	from ("${asciidoctor.outputDir}") { // Asciidoctor 실행으로 생성되는 index.html 파일을 jar 파일 안에 추가
+		into 'static/docs'
+	}
+}
