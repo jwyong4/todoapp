@@ -9,6 +9,7 @@ public class Dto {
     @Getter
     @AllArgsConstructor
     public static class Post {
+
         private String title;
         private int order;
         private boolean completed;
@@ -17,6 +18,7 @@ public class Dto {
     @Getter
     @AllArgsConstructor
     public static class Patch {
+
         private int id;
         private String title;
         private int order;
@@ -30,6 +32,7 @@ public class Dto {
     @Getter
     @AllArgsConstructor
     public static class response {
+
         private int id;
         private String title;
         private int order;

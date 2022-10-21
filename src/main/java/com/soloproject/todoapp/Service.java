@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @org.springframework.stereotype.Service
 public class Service {
+
     private final TasksRepository tasksRepository;
 
     public Service(TasksRepository tasksRepository) {
@@ -26,7 +27,8 @@ public class Service {
 
         Optional.ofNullable(tasks.getTitle()).ifPresent(title -> findTasks.setTitle(title));
         Optional.ofNullable(tasks.getOrder()).ifPresent(order -> findTasks.setOrder(order));
-        Optional.ofNullable(tasks.isCompleted()).ifPresent(completed -> findTasks.setCompleted(completed));
+        Optional.ofNullable(tasks.isCompleted())
+            .ifPresent(completed -> findTasks.setCompleted(completed));
 
         return tasksRepository.save(findTasks);
     }
@@ -41,7 +43,8 @@ public class Service {
 
     public Tasks findVerifiedTasks(int id) {
         Optional<Tasks> optionalTasks = tasksRepository.findById(id);
-        Tasks findTasks = optionalTasks.orElseThrow(() -> new NoSuchElementException("Tasks Not Found"));
+        Tasks findTasks = optionalTasks.orElseThrow(
+            () -> new NoSuchElementException("Tasks Not Found"));
 
         return findTasks;
     }
