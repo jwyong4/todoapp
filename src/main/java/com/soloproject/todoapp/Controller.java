@@ -1,6 +1,5 @@
 package com.soloproject.todoapp;
 
-import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
